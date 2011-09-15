@@ -38,7 +38,8 @@ namespace SmartServerClient.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=nickpc;Initial Catalog=AramisUTK;User ID=sa;Password=123")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=10.9.1.3\\MSSQLSERVER2008;Initial Catalog=AramisUTK;User ID=sa;Passwor" +
+            "d=123")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));
@@ -56,7 +57,7 @@ namespace SmartServerClient.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("SmartPhoneSMSHelper")]
+        [global::System.Configuration.DefaultSettingValueAttribute("GSMTerminalSMSHelper")]
         public string BaseHelperClassName {
             get {
                 return ((string)(this["BaseHelperClassName"]));

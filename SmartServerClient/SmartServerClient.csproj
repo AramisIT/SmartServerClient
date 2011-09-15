@@ -60,6 +60,7 @@
     <Compile Include="Connection\QueryExecuter.cs" />
     <Compile Include="Connection\SmartClient.cs" />
     <Compile Include="Connection\SmartServerClient.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

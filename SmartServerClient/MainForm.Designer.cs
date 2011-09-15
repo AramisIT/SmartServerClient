@@ -29,13 +29,13 @@
         private void InitializeComponent()
             {
             this.Status = new System.Windows.Forms.GroupBox();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.Log = new System.Windows.Forms.RichTextBox();
             this.Status.SuspendLayout();
             this.SuspendLayout();
             // 
             // Status
             // 
-            this.Status.Controls.Add(this.richTextBox1);
+            this.Status.Controls.Add(this.Log);
             this.Status.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Status.ForeColor = System.Drawing.SystemColors.ControlText;
             this.Status.Location = new System.Drawing.Point(0, 0);
@@ -45,15 +45,15 @@
             this.Status.TabStop = false;
             this.Status.Text = "Лог";
             // 
-            // richTextBox1
+            // Log
             // 
-            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox1.Location = new System.Drawing.Point(3, 16);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(730, 249);
-            this.richTextBox1.TabIndex = 1;
-            this.richTextBox1.Text = "";
+            this.Log.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Log.Location = new System.Drawing.Point(3, 16);
+            this.Log.Name = "Log";
+            this.Log.ReadOnly = true;
+            this.Log.Size = new System.Drawing.Size(730, 249);
+            this.Log.TabIndex = 1;
+            this.Log.Text = "";
             // 
             // MainForm
             // 
@@ -74,7 +74,7 @@
         #endregion
 
         private System.Windows.Forms.GroupBox Status;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.RichTextBox Log;
 
 
 

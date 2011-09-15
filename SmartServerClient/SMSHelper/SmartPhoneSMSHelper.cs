@@ -32,6 +32,10 @@ namespace Aramis.SMSHelper
             return result;            
             }
 
+        public override void Close()
+            {
+            Client.Stop();
+            }
         //public class SmartPhoneSMSHelper : SMSHelper
         //{
 

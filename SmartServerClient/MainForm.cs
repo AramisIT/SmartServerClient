@@ -8,13 +8,16 @@ using System.Text;
 using System.Windows.Forms;
 using SmartServerClient.Properties;
 using SmartServerClient.Connection;
+using System.IO.Ports;
+using System.Diagnostics;
+using Aramis.SMSHelper;
 
 namespace SmartServerClient
     {
     public delegate void AddReceivedMessageDelegate(DateTime date, string senderNo, string messageBody);
     public partial class MainForm : Form
         {
-        private QueryExecutor queryExecutor;
+        private SmartClient Client;
 
         public MainForm()
             {
@@ -38,13 +41,99 @@ namespace SmartServerClient
 
         private void MainForm_Load(object sender, EventArgs e)
             {
-            queryExecutor = new QueryExecutor(this);
+            SMSHelper.SmsHelper.OnRefreshConnectionStatus += new SetConnectionStatusDelegate(SmsHelper_OnRefreshConnectionStatus);
+            SMSHelper.SmsHelper.OnReceivingMessage += new OnReceivingMessageDelegate(SmsHelper_OnReceivingMessage);
+            SMSHelper.SmsHelper.OnSendingMessage += new OnSendingMessageDelegate(SmsHelper_OnSendingMessage);
+            Client = new SmartClient();
+            
+            }
+
+        void SmsHelper_OnSendingMessage(Aramis.SMSHelper.Message message, bool sendingResult, string errorDescription)
+            {
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnSendingMessageDelegate(SmsHelper_OnSendingMessage), message, sendingResult, errorDescription);
+                }
+            else
+                {
+                if ( sendingResult )
+                    {
+                    Log.SelectionColor = Color.Orange;
+                    Log.AppendText(String.Format("Отправлено сообщение:\r\n\tОтправитель:{0}\r\n\tТекст сообщения:{1}\r\n", message.Number, message.MessageBody));
+                    }
+                else
+                    {
+                    Log.SelectionColor = Color.Red;
+                    Log.AppendText(String.Format("Ошибка при отправке: {0}\r\n", errorDescription));
+                    }
+                }
+            }
+
+        void SmsHelper_OnReceivingMessage(Aramis.SMSHelper.Message message)
+            {
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnReceivingMessageDelegate(SmsHelper_OnReceivingMessage), message);
+                }
+            else
+                {
+                Log.SelectionColor = Color.Green;
+                Log.AppendText(String.Format("Принято сообщение:\r\n\tОтправитель:{0}\r\n\tТекст сообщения:{1}\r\n", message.Number, message.MessageBody));
+                }
+            }
+
+        void SmsHelper_OnRefreshConnectionStatus(bool IsOnline)
+            {
+            if ( InvokeRequired )
+                {
+                Invoke(new SetConnectionStatusDelegate(SmsHelper_OnRefreshConnectionStatus), IsOnline);
+                }
+            else
+                {
+                Status.Text = IsOnline ? "Online" : "Offline";
+                }
             }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
             {
-            queryExecutor.Stop();
+            Client.Stop();
             }
+
+        private void button1_Click(object sender, EventArgs e)
+            {
+            //using ( var comPort = new SerialPort(String.Format("COM{0}", Settings.Default.ComPortNumber)) )
+            //    {
+            //    comPort.BaudRate = 9600; // Bits per second
+            //    comPort.DataBits = 8;
+            //    comPort.Parity = Parity.None;
+            //    comPort.StopBits = StopBits.One;
+
+            //    comPort.ReadTimeout = 300;
+
+            //    comPort.Handshake = Handshake.None;
+
+            //    comPort.Open();
+
+            //    string mess = "AT+CPIN?\r";
+            //    comPort.Write(mess);
+            //    //Line();
+
+            //    System.Threading.Thread.Sleep(1200);
+
+            //    char[] buff = new char[256];
+
+            //    while ( true )
+            //        {
+            //        string count = comPort.ReadLine();//buff, 0, buff.Length);
+            //        //Trace.WriteLine(str);
+            //        Console.WriteLine(count);
+            //        System.Threading.Thread.Sleep(800);
+            //        }
+            //    }
+            //GSMTerminalAgent agent = new GSMTerminalAgent();
+            //agent.SendSMS("380955627688", "Прикинь! РАБОТАЕТ ^_^");
+            }
+
 
         //private void button1_Click(object sender, EventArgs e)
         //    {
