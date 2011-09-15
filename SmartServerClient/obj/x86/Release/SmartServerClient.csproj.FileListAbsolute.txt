@@ -1,0 +1,14 @@
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\bin\Release\SmartServerClient.exe.config
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\bin\Release\SmartServerClient.exe
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\bin\Release\SmartServerClient.pdb
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\bin\Release\PackageConvertation.dll
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\bin\Release\PackageViaWireless.dll
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\ResolveAssemblyReference.cache
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\SmartServerClient.MainForm.resources
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\SmartServerClient.Properties.Resources.resources
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\GenerateResource-ResGen.read.1.tlog
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\GenerateResource-ResGen.write.1.tlog
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\SmartServerClient.exe
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\SmartServerClient.pdb
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\GenerateResource.read.1.tlog
+W:\Work\Temp Dreamering\C# projects\SmartServerClient\SmartServerClient\obj\x86\Release\GenerateResource.write.1.tlog
