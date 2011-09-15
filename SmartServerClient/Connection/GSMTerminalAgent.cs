@@ -66,8 +66,12 @@ namespace SmartServerClient.Connection
                 string len = (( mess.Length - 3 ) / 2).ToString();
 
                 answer = SendCommandAndReceiveAnswer("+cmgw", len);
-
-
+                if ( IsError(answer) )
+                    {
+                    return false;
+                    }
+                int messageIndex = WriteMessage(mess);
+                
                 //answer = SendCommandAndReceiveAnswer();
                 }
             return false;
@@ -166,6 +170,43 @@ namespace SmartServerClient.Connection
                 result = String.Format("Error: {0}", exp.Message);
                 }
             return result;
+            }
+
+        private int WriteMessage(string message)
+            {
+            string result = null;
+            int index = -1;
+            try
+                {
+                ComPort.WriteLine(String.Format("{0}{1}", message, ( char ) 26));
+                while ( result == null || result == "" )
+                    {
+                    Thread.Sleep(100);
+                    result = ComPort.ReadExisting();
+                    }
+                }
+            catch ( Exception exp )
+                {
+                result = String.Format("Error: {0}", exp.Message);
+                }
+
+            if ( IsError(result) )
+                {
+                ErrorMessage = result;
+                }
+            else
+                {
+                if ( result.ToLower().IndexOf("+cmgw:") != -1 )
+                    {
+                    ErrorMessage = "";
+                    index = Int32.Parse(result.Substring(7));
+                    }
+                else
+                    {
+                    ErrorMessage = result;
+                    }
+                }
+            return index;
             }
 
         private bool IsError(string answer)
