@@ -8,7 +8,7 @@ using SmartServerClient.Connection;
 namespace Aramis.SMSHelper
 {
     public delegate void OnReceivingMessageDelegate(Message message);
-    public delegate void OnSendingMessageDelegate(Message message, bool sendingResult);
+    public delegate void OnSendingMessageDelegate(Message message, bool sendingResult, string errorDescription);
 
     public abstract class SMSHelper
     {
@@ -46,11 +46,11 @@ namespace Aramis.SMSHelper
                 }
             }
 
-        protected void NotifyOnSendingMessage(Message message, bool sendingResult)
+        protected void NotifyOnSendingMessage(Message message, bool sendingResult, string errorDescription = null)
             {
             if ( OnSendingMessage != null )
                 {
-                OnSendingMessage(message, sendingResult);
+                OnSendingMessage(message, sendingResult, errorDescription);
                 }
             }
 
@@ -61,6 +61,8 @@ namespace Aramis.SMSHelper
                 OnRefreshConnectionStatus(isOnline);
                 }
             }
+
+        public abstract void Close();
         //public DataTable ReceivedMessageTable
         //    {
         //    get;

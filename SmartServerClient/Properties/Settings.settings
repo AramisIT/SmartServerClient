@@ -8,16 +8,16 @@
     <Setting Name="ConnectionString" Type="(Connection string)" Scope="Application">
       <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;SerializableConnectionString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;ConnectionString&gt;Data Source=nickpc;Initial Catalog=AramisUTK;User ID=sa;Password=123&lt;/ConnectionString&gt;
+  &lt;ConnectionString&gt;Data Source=10.9.1.3\MSSQLSERVER2008;Initial Catalog=AramisUTK;User ID=sa;Password=123&lt;/ConnectionString&gt;
   &lt;ProviderName&gt;System.Data.SqlClient&lt;/ProviderName&gt;
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
-      <Value Profile="(Default)">Data Source=nickpc;Initial Catalog=AramisUTK;User ID=sa;Password=123</Value>
+      <Value Profile="(Default)">Data Source=10.9.1.3\MSSQLSERVER2008;Initial Catalog=AramisUTK;User ID=sa;Password=123</Value>
     </Setting>
     <Setting Name="PinCode" Type="System.String" Scope="Application">
       <Value Profile="(Default)">1024</Value>
     </Setting>
     <Setting Name="BaseHelperClassName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">SmartPhoneSMSHelper</Value>
+      <Value Profile="(Default)">GSMTerminalSMSHelper</Value>
     </Setting>
     <Setting Name="HelpersClassesNamespace" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Aramis.SMSHelper</Value>
