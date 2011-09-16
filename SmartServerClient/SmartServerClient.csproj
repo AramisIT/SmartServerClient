@@ -55,9 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connection\CheckSMSForSending.cs" />
     <Compile Include="Connection\GSMTerminalAgent.cs" />
-    <Compile Include="Connection\QueryExecuter.cs" />
     <Compile Include="Connection\SmartClient.cs" />
     <Compile Include="Connection\SmartServerClient.cs" />
     <Compile Include="MainForm.cs">

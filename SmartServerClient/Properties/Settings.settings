@@ -23,7 +23,7 @@
       <Value Profile="(Default)">Aramis.SMSHelper</Value>
     </Setting>
     <Setting Name="ComPortNumber" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">5</Value>
     </Setting>
   </Settings>
 </SettingsFile>

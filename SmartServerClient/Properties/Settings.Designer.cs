@@ -74,7 +74,7 @@ namespace SmartServerClient.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
         public int ComPortNumber {
             get {
                 return ((int)(this["ComPortNumber"]));
