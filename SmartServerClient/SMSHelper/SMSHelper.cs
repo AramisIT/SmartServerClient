@@ -5,7 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using SmartServerClient.Properties;
 using SmartServerClient.Connection;
-namespace Aramis.SMSHelper
+namespace Aramis.SMSHelperNamespace
 {
     public delegate void OnReceivingMessageDelegate(Message message);
     public delegate void OnSendingMessageDelegate(Message message, bool sendingResult, string errorDescription);

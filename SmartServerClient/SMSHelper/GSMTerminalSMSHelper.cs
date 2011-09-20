@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SmartServerClient.Connection;
 
-namespace Aramis.SMSHelper
+namespace Aramis.SMSHelperNamespace
     {
     public class GSMTerminalSMSHelper : SMSHelper
         {
@@ -19,7 +19,12 @@ namespace Aramis.SMSHelper
 
         public override Message GetSMS()
             {
-            return null;
+            Message message = TerminalAgent.GetSMS();
+            if ( message != null )
+                {
+                NotifyOnReceivingMessage(message);
+                }
+            return message;
             }
 
         public override void Close()

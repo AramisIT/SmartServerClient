@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8055F083-CBFC-4EA4-B8B2-81E5EF538A4C}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SmartServerClient</RootNamespace>
     <AssemblyName>SmartServerClient</AssemblyName>
@@ -70,6 +70,7 @@
     <Compile Include="Connection\ServerAgent.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SMSHelper\GSMTerminalSMSHelper.cs" />
+    <Compile Include="SMSHelper\MessagesForWritingToDBList.cs" />
     <Compile Include="SMSHelper\SmartPhoneSMSHelper.cs" />
     <Compile Include="SMSHelper\SMSHelper.cs" />
     <Compile Include="SMSHelper\Message.cs" />

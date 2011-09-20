@@ -2,11 +2,11 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Data;
-namespace Aramis.SMSHelper
+namespace Aramis.SMSHelperNamespace
 {
     public class SmartPhoneSMSHelper : SMSHelper
         {
-        private SmartServerClient.Connection.SmartServerClient Client = new SmartServerClient.Connection.SmartServerClient();
+        private SmartServerClient.Connection.SmartServerClient Client = new SmartServerClient.Connection.SmartServerClient() { RefreshConnectionStatus = OnRefreshConnectionStatus };
 
         public override Message GetSMS()
             {
@@ -35,6 +35,11 @@ namespace Aramis.SMSHelper
         public override void Close()
             {
             Client.Stop();
+            }
+
+        static void OnRefreshConnectionStatus(bool isOnline)
+            {
+            SmsHelper.NotifySetConnectionStatus(isOnline);
             }
         //public class SmartPhoneSMSHelper : SMSHelper
         //{

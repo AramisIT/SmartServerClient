@@ -37,17 +37,6 @@ namespace SmartServerClient.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=10.9.1.3\\MSSQLSERVER2008;Initial Catalog=AramisUTK;User ID=sa;Passwor" +
-            "d=123")]
-        public string ConnectionString {
-            get {
-                return ((string)(this["ConnectionString"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1024")]
         public string PinCode {
             get {
@@ -57,7 +46,7 @@ namespace SmartServerClient.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("GSMTerminalSMSHelper")]
+        [global::System.Configuration.DefaultSettingValueAttribute("SmartPhoneSMSHelper")]
         public string BaseHelperClassName {
             get {
                 return ((string)(this["BaseHelperClassName"]));
@@ -66,7 +55,7 @@ namespace SmartServerClient.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Aramis.SMSHelper")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Aramis.SMSHelperNamespace")]
         public string HelpersClassesNamespace {
             get {
                 return ((string)(this["HelpersClassesNamespace"]));
@@ -79,6 +68,61 @@ namespace SmartServerClient.Properties {
         public int ComPortNumber {
             get {
                 return ((int)(this["ComPortNumber"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=nickpc;Initial Catalog=AramisUTK;User ID=sa;Password=123")]
+        public string ConnectionString {
+            get {
+                return ((string)(this["ConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("380952801151")]
+        public string RemoutePhoneNumber {
+            get {
+                return ((string)(this["RemoutePhoneNumber"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("380955627688")]
+        public string NativePhoneNumber {
+            get {
+                return ((string)(this["NativePhoneNumber"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int HoursBetweenDeliveryServiceTest {
+            get {
+                return ((int)(this["HoursBetweenDeliveryServiceTest"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int DelayBeforeTestErrorCalled {
+            get {
+                return ((int)(this["DelayBeforeTestErrorCalled"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("380508090208")]
+        public string AdminPhoneNumber {
+            get {
+                return ((string)(this["AdminPhoneNumber"]));
             }
         }
     }

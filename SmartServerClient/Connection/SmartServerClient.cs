@@ -9,7 +9,7 @@ using System.Data;
 using SmartServerClient;
 using SmartServerClient.Properties;
 using WMS_client;
-using Aramis.SMSHelper;
+using Aramis.SMSHelperNamespace;
 
 namespace SmartServerClient.Connection
     {
@@ -100,7 +100,7 @@ namespace SmartServerClient.Connection
 
         void ConnectionAgent_OnRefreshConnectionStatus(bool IsOnline)
             {
-            if ( RefreshConnectionStatus != null )
+            if ( RefreshConnectionStatus != null && !NeedAbortThread)
                 {
                 RefreshConnectionStatus(IsOnline);
                 }

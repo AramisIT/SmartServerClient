@@ -10,7 +10,7 @@ using SmartServerClient.Properties;
 using SmartServerClient.Connection;
 using System.IO.Ports;
 using System.Diagnostics;
-using Aramis.SMSHelper;
+using Aramis.SMSHelperNamespace;
 
 namespace SmartServerClient
     {
@@ -45,10 +45,59 @@ namespace SmartServerClient
             SMSHelper.SmsHelper.OnReceivingMessage += new OnReceivingMessageDelegate(SmsHelper_OnReceivingMessage);
             SMSHelper.SmsHelper.OnSendingMessage += new OnSendingMessageDelegate(SmsHelper_OnSendingMessage);
             Client = new SmartClient();
-            
+            Client.OnRemouteSMSServiceOffline += new OnRemouteSMSServiceOfflineDelegate(Client_OnRemouteSMSServiceOffline);
+            Client.OnTestStarted += new OnTestStartedDelegate(Client_OnTestStarted);
+            Client.OnTestEnded += new OnTestEndedDelegate(Client_OnTestEnded);
             }
 
-        void SmsHelper_OnSendingMessage(Aramis.SMSHelper.Message message, bool sendingResult, string errorDescription)
+        void Client_OnTestEnded(Aramis.Enums.TestResults result)
+            {
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnTestEndedDelegate(Client_OnTestEnded), result);
+                }
+            else
+                {
+                if ( result == Aramis.Enums.TestResults.Ok )
+                    {
+                    Log.SelectionColor = Color.GreenYellow;
+                    Log.AppendText(String.Format("Тест системы доставки СМС завершен успешно в {0}\r\n", DateTime.Now));
+                    }
+                else
+                    {
+                    Log.SelectionColor = Color.Red;
+                    Log.AppendText(String.Format("Тест системы доставки СМС завершен неудачей в {0}\r\n", DateTime.Now));
+                    }
+                }
+            }
+
+        void Client_OnTestStarted()
+            {
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnTestStartedDelegate(Client_OnTestStarted));
+                }
+            else
+                {
+                Log.SelectionColor = Color.GreenYellow;
+                Log.AppendText(String.Format("Тест системы доставки СМС начат в {0}\r\n", DateTime.Now));
+                }
+            }
+
+        void Client_OnRemouteSMSServiceOffline()
+            {
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnRemouteSMSServiceOfflineDelegate(Client_OnRemouteSMSServiceOffline));
+                }
+            else
+                {
+                    Log.SelectionColor = Color.Red;
+                    Log.AppendText(String.Format("Сервис доставки СМС с номером {0} не отвечает!\r\n", Settings.Default.RemoutePhoneNumber));
+                }
+            }
+
+        void SmsHelper_OnSendingMessage(Aramis.SMSHelperNamespace.Message message, bool sendingResult, string errorDescription)
             {
             if ( Log.InvokeRequired )
                 {
@@ -69,7 +118,7 @@ namespace SmartServerClient
                 }
             }
 
-        void SmsHelper_OnReceivingMessage(Aramis.SMSHelper.Message message)
+        void SmsHelper_OnReceivingMessage(Aramis.SMSHelperNamespace.Message message)
             {
             if ( Log.InvokeRequired )
                 {
@@ -86,7 +135,17 @@ namespace SmartServerClient
             {
             if ( InvokeRequired )
                 {
-                Invoke(new SetConnectionStatusDelegate(SmsHelper_OnRefreshConnectionStatus), IsOnline);
+                if ( !IsDisposed )
+                    {
+                    try
+                        {
+                        Invoke(new SetConnectionStatusDelegate(SmsHelper_OnRefreshConnectionStatus), IsOnline);
+                        }
+                    catch
+                        {
+
+                        }
+                    }
                 }
             else
                 {

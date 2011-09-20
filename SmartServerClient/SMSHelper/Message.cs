@@ -3,8 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Aramis.SMSHelper
+namespace Aramis.SMSHelperNamespace
 {
+    [Serializable]
     public class Message
     {
         public DateTime Date
