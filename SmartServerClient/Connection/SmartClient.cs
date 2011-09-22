@@ -22,14 +22,16 @@ namespace Aramis.Enums
 namespace SmartServerClient.Connection
     {
     public delegate void OnTestStartedDelegate();
-    public delegate void OnRemouteSMSServiceOfflineDelegate();
+    public delegate void OnRemouteSMSServiceStatusChangedDelegate(bool isOnline);
     public delegate void OnTestEndedDelegate(TestResults result);
+    public delegate void OnErrorDelegate(string error);
 
     public class SmartClient
         {
         public event OnTestStartedDelegate OnTestStarted;
         public event OnTestEndedDelegate OnTestEnded;
-        public event OnRemouteSMSServiceOfflineDelegate OnRemouteSMSServiceOffline;
+        public event OnRemouteSMSServiceStatusChangedDelegate OnRemouteSMSServiceStatusChanged;
+        public event OnErrorDelegate OnError;
 
         public const int SLEEP_BEFORE_CHECKING_AGAIN = 3000;
         public SetConnectionStatusDelegate OnSmartServerConnectionStatusChanged;
@@ -40,9 +42,10 @@ namespace SmartServerClient.Connection
         private bool remouteServiceIsOnline = true;
         public bool NeedAbortThread
             {
-            get;
-            private set;
+            get { lock ( this ) { return needAbortThread; } }
+            private set { lock ( this ) { needAbortThread = value; } }
             }
+        private bool needAbortThread;
         private MessagesForWritingToDBList MessageList;
 
         private Thread CheckingTaskThread;
@@ -108,10 +111,10 @@ namespace SmartServerClient.Connection
                             MarkTaskAsSended(message.TaskId);
                             }
                         }
-                    } while ( message != null && !ErrorWhileSending);
+                    } while ( message != null && !ErrorWhileSending );
 
-                if ( new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus())
-                    {                    
+                if ( new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus() )
+                    {
                     StartTest();
                     }
 
@@ -147,7 +150,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             }
 
@@ -165,26 +168,31 @@ namespace SmartServerClient.Connection
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@PhoneNumber", Settings.Default.RemoutePhoneNumber);
                         cmd.Parameters.AddWithValue("@OfflineStatusDelay", Settings.Default.DelayBeforeTestErrorCalled);
-                        result = Convert.ToBoolean( cmd.ExecuteScalar());
-                        if ( !result && remouteServiceIsOnline)
+                        result = Convert.ToBoolean(cmd.ExecuteScalar());
+                        if ( !result && remouteServiceIsOnline )
                             {
                             remouteServiceIsOnline = false;
-                            SendMessageToAdministrator(String.Format("Удаленный сервис {0} Offline", Settings.Default.BaseHelperClassName));
-                            if ( OnRemouteSMSServiceOffline != null )
+                            SendMessageToAdministrator(String.Format("Удаленный сервис {0} Offline",
+                                Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "SmartPhoneSMSHelper" : "GSMTerminalSMSHelper"));
+                            if ( OnRemouteSMSServiceStatusChanged != null )
                                 {
-                                OnRemouteSMSServiceOffline();
+                                OnRemouteSMSServiceStatusChanged(false);
                                 }
                             }
-                        else if ( result )
+                        else if ( result && !remouteServiceIsOnline )
                             {
                             remouteServiceIsOnline = true;
+                            if ( OnRemouteSMSServiceStatusChanged != null )
+                                {
+                                OnRemouteSMSServiceStatusChanged(true);
+                                }
                             }
                         }
                     }
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             return result;
             }
@@ -203,7 +211,7 @@ namespace SmartServerClient.Connection
                         cmd.Parameters.AddWithValue("@Date", DateTime.Now.Date);
                         cmd.Parameters.AddWithValue("@ServicePhoneNumber", Settings.Default.RemoutePhoneNumber);
                         object result = cmd.ExecuteScalar();
-                        if ( ( int ) result == 0 && SMSHelper.SmsHelper.SendMessage(message))
+                        if ( ( int ) result == 0 && SMSHelper.SmsHelper.SendMessage(message) )
                             {
                             cmd.CommandText = "AddSMSDeliveryServiceTroubleInformation";
                             cmd.Parameters.Clear();
@@ -220,7 +228,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             }
 
@@ -237,8 +245,8 @@ namespace SmartServerClient.Connection
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@PhoneNumber", Settings.Default.RemoutePhoneNumber);
                         cmd.Parameters.AddWithValue("@NativePhoneNumber", Settings.Default.NativePhoneNumber);
-                        object result = cmd.ExecuteNonQuery();
-                        testId = Convert.ToInt64( result);
+                        object result = cmd.ExecuteScalar();
+                        testId = Convert.ToInt64(result);
                         testStarted = true;
                         lastChecked = DateTime.Now.Ticks;
                         if ( OnTestStarted != null )
@@ -250,7 +258,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             }
 
@@ -267,7 +275,7 @@ namespace SmartServerClient.Connection
                             {
                             cmd.CommandText = "update SMSDeliverServiceTest set DateEnd = GETDATE(), Result = @Status where Id = @Id";
                             cmd.Parameters.AddWithValue("@Id", testId);
-                            cmd.Parameters.AddWithValue("@Status", (int)result);
+                            cmd.Parameters.AddWithValue("@Status", ( int ) result);
                             cmd.ExecuteNonQuery();
                             testId = 0;
                             testStarted = false;
@@ -281,7 +289,7 @@ namespace SmartServerClient.Connection
                     }
                 catch ( Exception exp )
                     {
-
+                    NotifyOnError(exp);
                     }
                 }
 
@@ -303,8 +311,9 @@ namespace SmartServerClient.Connection
                         }
                     }
                 }
-            catch
+            catch ( Exception exp )
                 {
+                NotifyOnError(exp);
                 }
             }
 
@@ -337,8 +346,9 @@ namespace SmartServerClient.Connection
                         }
                     }
                 }
-            catch
+            catch ( Exception exp )
                 {
+                NotifyOnError(exp);
                 }
             return null;
             }
@@ -371,13 +381,34 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                return false;
+                NotifyOnError(exp);
                 }
+            return false;
             }
 
         public void Stop()
             {
             NeedAbortThread = true;
+            }
+
+        public void NotifyOnError(Exception exp)
+            {
+            NotifyOnError(exp.ToString());
+            }
+
+        public void NotifyOnError(string exceptionMessage)
+            {
+            if ( OnError != null )
+                {
+                try
+                    {
+                    OnError(exceptionMessage.ToString());
+                    }
+                catch ( Exception exp )
+                    {
+                    exp.ToString();
+                    }
+                }
             }
         }
     }

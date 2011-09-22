@@ -109,6 +109,7 @@ namespace SmartServerClient.Connection
         private void RestartConnectionAgent()
             {
             AgentThread.Abort();
+            ConnectionAgent.Stop();
             StartConnectionAgent();
             }
 

@@ -22,7 +22,7 @@ namespace SmartServerClient
         public MainForm()
             {
             InitializeComponent();
-            
+
             //Settings.Default.ServerIP = (string)Settings.Default.Properties["ServerIP"].DefaultValue;
             //Settings.Default.Save();
             }
@@ -45,13 +45,55 @@ namespace SmartServerClient
             SMSHelper.SmsHelper.OnReceivingMessage += new OnReceivingMessageDelegate(SmsHelper_OnReceivingMessage);
             SMSHelper.SmsHelper.OnSendingMessage += new OnSendingMessageDelegate(SmsHelper_OnSendingMessage);
             Client = new SmartClient();
-            Client.OnRemouteSMSServiceOffline += new OnRemouteSMSServiceOfflineDelegate(Client_OnRemouteSMSServiceOffline);
+            Client.OnRemouteSMSServiceStatusChanged += new OnRemouteSMSServiceStatusChangedDelegate(Client_OnRemouteSMSServiceStatusChanged);
             Client.OnTestStarted += new OnTestStartedDelegate(Client_OnTestStarted);
             Client.OnTestEnded += new OnTestEndedDelegate(Client_OnTestEnded);
+            Client.OnError += new OnErrorDelegate(Client_OnError);
+            Text = String.Format("Сервис доставки СМС: {0}", Settings.Default.BaseHelperClassName);
+            }
+
+        void Client_OnRemouteSMSServiceStatusChanged(bool isOnline)
+            {
+            if ( Log.IsDisposed )
+                return;
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnRemouteSMSServiceStatusChangedDelegate(Client_OnRemouteSMSServiceStatusChanged), isOnline);
+                }
+            else
+                {
+                if ( isOnline )
+                    {
+                    Log.SelectionColor = Color.Gold;
+                    Log.AppendText(String.Format("Сервис доставки СМС с номером {0} работает!\r\n", Settings.Default.RemoutePhoneNumber));
+                    }
+                else
+                    {
+                    Log.SelectionColor = Color.Red;
+                    Log.AppendText(String.Format("Сервис доставки СМС с номером {0} не отвечает!\r\n", Settings.Default.RemoutePhoneNumber));
+                    }
+                }
+            }
+
+        void Client_OnError(string error)
+            {
+            if ( Log.IsDisposed )
+                return;
+            if ( Log.InvokeRequired )
+                {
+                Log.Invoke(new OnErrorDelegate(Client_OnError), error);
+                }
+            else
+                {
+                Log.SelectionColor = Color.Red;
+                Log.AppendText(String.Format("Ошибка: {0}", error));
+                }
             }
 
         void Client_OnTestEnded(Aramis.Enums.TestResults result)
             {
+            if ( Log.IsDisposed )
+                return;
             if ( Log.InvokeRequired )
                 {
                 Log.Invoke(new OnTestEndedDelegate(Client_OnTestEnded), result);
@@ -73,6 +115,8 @@ namespace SmartServerClient
 
         void Client_OnTestStarted()
             {
+            if ( Log.IsDisposed )
+                return;
             if ( Log.InvokeRequired )
                 {
                 Log.Invoke(new OnTestStartedDelegate(Client_OnTestStarted));
@@ -84,21 +128,10 @@ namespace SmartServerClient
                 }
             }
 
-        void Client_OnRemouteSMSServiceOffline()
-            {
-            if ( Log.InvokeRequired )
-                {
-                Log.Invoke(new OnRemouteSMSServiceOfflineDelegate(Client_OnRemouteSMSServiceOffline));
-                }
-            else
-                {
-                    Log.SelectionColor = Color.Red;
-                    Log.AppendText(String.Format("Сервис доставки СМС с номером {0} не отвечает!\r\n", Settings.Default.RemoutePhoneNumber));
-                }
-            }
-
         void SmsHelper_OnSendingMessage(Aramis.SMSHelperNamespace.Message message, bool sendingResult, string errorDescription)
             {
+            if ( Log.IsDisposed )
+                return;
             if ( Log.InvokeRequired )
                 {
                 Log.Invoke(new OnSendingMessageDelegate(SmsHelper_OnSendingMessage), message, sendingResult, errorDescription);
@@ -108,7 +141,7 @@ namespace SmartServerClient
                 if ( sendingResult )
                     {
                     Log.SelectionColor = Color.Orange;
-                    Log.AppendText(String.Format("Отправлено сообщение:\r\n\tОтправитель:{0}\r\n\tТекст сообщения:{1}\r\n", message.Number, message.MessageBody));
+                    Log.AppendText(String.Format("Отправлено сообщение:\r\n\tПолучатель:{0}\r\n\tТекст сообщения:{1}\r\n", message.Number, message.MessageBody));
                     }
                 else
                     {
@@ -120,6 +153,8 @@ namespace SmartServerClient
 
         void SmsHelper_OnReceivingMessage(Aramis.SMSHelperNamespace.Message message)
             {
+            if ( Log.IsDisposed )
+                return;
             if ( Log.InvokeRequired )
                 {
                 Log.Invoke(new OnReceivingMessageDelegate(SmsHelper_OnReceivingMessage), message);
@@ -212,7 +247,7 @@ namespace SmartServerClient
         //    string code = Number.Text.Substring(5, 3);
         //    string number = Number.Text.Substring(10, 3) + Number.Text.Substring(14, 2) + Number.Text.Substring(17, 2);
         //    return code + number;            
-            
+
         //    }
         }
     }

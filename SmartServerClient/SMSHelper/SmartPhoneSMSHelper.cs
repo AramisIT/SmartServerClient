@@ -22,7 +22,8 @@ namespace Aramis.SMSHelperNamespace
 
         public override bool SendMessage(Message message)
             {
-            object[] parameters = Client.PerformQuery("SendSMS", message.TaskId, message.Number, message.MessageBody);
+            string number = message.Number.IndexOf("+") != 0 ? "+" + message.Number: message.Number;
+            object[] parameters = Client.PerformQuery("SendSMS", message.TaskId, number, message.MessageBody);
             bool result = false;
             if ( parameters != null )
                 {
@@ -41,6 +42,7 @@ namespace Aramis.SMSHelperNamespace
             {
             SmsHelper.NotifySetConnectionStatus(isOnline);
             }
+        
         //public class SmartPhoneSMSHelper : SMSHelper
         //{
 

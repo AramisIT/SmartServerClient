@@ -46,9 +46,22 @@ namespace SmartServerClient.Connection
         private long lastPackageResived = DateTime.Now.Ticks;
         public bool NeedAbortThread
             {
-            get;
-            private set;
+            get
+                {
+                lock ( this )
+                    {
+                    return needAbortThread;
+                    }
+                }
+            private set
+                {
+                lock ( this )
+                    {
+                    needAbortThread = value;
+                    }
+                }
             }
+        private bool needAbortThread;
         #endregion
 
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,7 +86,7 @@ namespace SmartServerClient.Connection
                 while ( !Connect() ) ;
                 ReadPackages();
                 }
-
+            CloseAll();
             }
 
         public bool SendPackage(Byte[] Package)
@@ -118,10 +131,16 @@ namespace SmartServerClient.Connection
             {
 
             try { TCPStream.Close(); }
-            catch { }
+            catch ( Exception exp )
+                {
+                exp.ToString();
+                }
 
             try { TCPClient.Close(); }
-            catch { }
+            catch ( Exception exp )
+                {
+                exp.ToString();
+                }
 
             }
 
@@ -137,7 +156,7 @@ namespace SmartServerClient.Connection
                 {
                 TCPClient = new TcpClient(IPAddress, PortNumber);
                 }
-            catch (Exception exp)
+            catch ( Exception exp )
                 {
                 Console.WriteLine("Can't connect: " + exp.Message);
 
@@ -155,8 +174,8 @@ namespace SmartServerClient.Connection
 
                 if ( NetStreamReadRes.AsyncWaitHandle.WaitOne(3000, false) )
                     {
-
                     int streamLength = TCPStream.EndRead(NetStreamReadRes);
+                    NetStreamReadRes = null;
                     ConnResult = Encoding.GetEncoding(1251).GetString(StreamTest, 0, streamLength);
                     }
                 else
@@ -164,7 +183,7 @@ namespace SmartServerClient.Connection
                     System.Diagnostics.Trace.WriteLine("Не получил ответа о сервере");
                     }
                 }
-            catch (Exception exp)
+            catch ( Exception exp )
                 {
                 Console.WriteLine("Can't create the network stream: " + exp.Message);
                 return false;
@@ -294,7 +313,7 @@ namespace SmartServerClient.Connection
                     ResultString = Encoding.GetEncoding(1251).GetString(recivedData, 0, streamLength);
                     SB.Append(ResultString);
                     }
-                catch (Exception exp)
+                catch ( Exception exp )
                     {
                     Console.WriteLine(exp.Message);
                     SetConnectionStatus(false);
@@ -317,6 +336,7 @@ namespace SmartServerClient.Connection
             {
             InformationThread = new Thread(() =>
                 {
+                    bool? connectionStatus = null;
                     while ( !NeedAbortThread )
                         {
                         //if ( PingValue != null )
@@ -324,16 +344,17 @@ namespace SmartServerClient.Connection
                         //    ShowPingResult(PingValue);
                         //    PingValue = null;
                         //    }
-                        if ( OnRefreshConnectionStatus != null )
+                        if ( OnRefreshConnectionStatus != null && connectionStatus != OnLine )
                             {
                             OnRefreshConnectionStatus(OnLine);
+                            connectionStatus = OnLine;
                             }
 
-                        Thread.Sleep(100);
+                        Thread.Sleep(1000);
                         }
                 });
             InformationThread.Name = "InformationThread";
-            InformationThread.IsBackground = false;
+            InformationThread.IsBackground = true;
             InformationThread.Start();
             }
 
@@ -342,7 +363,8 @@ namespace SmartServerClient.Connection
 
         internal void Stop()
             {
-            NeedAbortThread = true;
+                NeedAbortThread = true;
+                CloseAll();
             }
         }
     }
