@@ -163,7 +163,7 @@ namespace SmartServerClient.Connection
             // 1 byte                       | First octet of this SMS-DELIVER message. http://dreamfabric.com/sms/deliver_fo.html
             indexNextRead = indexNextRead + 1 + serviceNumberLenght + 1;
             // Read sender number lenght (1 byte)
-            int numberLenght = Convert.ToInt32(pdu.Substring(indexNextRead * 2, 2), 16); 
+            int numberLenght = Convert.ToInt32(pdu.Substring(indexNextRead * 2, 2), 16);
             bool numberLenghtIsOdd = numberLenght % 2 == 0;
             // 1 byte                       | Address-Length. Length of the sender number (0B hex = 11 dec)
             // 1 byte                       | Type-of-address of the sender number. http://dreamfabric.com/sms/type_of_address.html
@@ -177,80 +177,77 @@ namespace SmartServerClient.Connection
                 number.AppendFormat("{0}{1}", codedNumber[i + 1], codedNumber[i]);
                 }
             // 1 byte                       | TP-PID. Protocol identifier. http://dreamfabric.com/sms/pid.html
-            // 1 byte                       | TP-DCS Data coding scheme. http://dreamfabric.com/sms/dcs.html
-            // 7 bytes                      | TP-SCTS. Time stamp (semi-octets). http://dreamfabric.com/sms/scts.html
-            indexNextRead = indexNextRead + ( numberLenght + 1 ) / 2 + 1 + 1;
+            indexNextRead = indexNextRead + ( numberLenght + 1 ) / 2 + 1;
+            // Read coding format : 0 - 7 bit; 8 - 16 bit; null - illegalFormat
+            int codingFormat = Convert.ToInt32(pdu.Substring(indexNextRead * 2, 2), 16);
+            switch ( codingFormat )
+                {
+                case 0:
+                case 8:
+                    break;
+                default:
+                    return null;
+                }
+            // 1 byte                       | TP-DCS Data coding scheme. http://dreamfabric.com/sms/dcs.html  
+            indexNextRead = indexNextRead + 1;
+            // Read message date
             string messageDateStr = pdu.Substring(indexNextRead * 2, 14);
-            DateTime messageDate = new DateTime(Convert.ToInt32(String.Format("20{0}{1}", messageDateStr[1], messageDateStr[0]), 16),
-                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[3], messageDateStr[2]), 16),
-                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[5], messageDateStr[4]), 16),
-                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[7], messageDateStr[6]), 16),
-                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[9], messageDateStr[8]), 16),
-                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[11], messageDateStr[10]), 16));
+            DateTime messageDate = new DateTime(Convert.ToInt32(String.Format("20{0}{1}", messageDateStr[1], messageDateStr[0]), 10),
+                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[3], messageDateStr[2]), 10),
+                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[5], messageDateStr[4]), 10),
+                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[7], messageDateStr[6]), 10),
+                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[9], messageDateStr[8]), 10),
+                Convert.ToInt32(String.Format("{0}{1}", messageDateStr[11], messageDateStr[10]), 10));
+            // 7 bytes                      | TP-SCTS. Time stamp (semi-octets). http://dreamfabric.com/sms/scts.html
+            indexNextRead = indexNextRead + 7;
             // Read UserDataLenght (1 byte)
             int userDataLenght = Convert.ToInt32(pdu.Substring(indexNextRead * 2, 2), 16);
             // 1 byte                       | TP-UDL. User data length, length of message. The TP-DCS field indicated 7-bit data, so the length here is the number of septets (10). If the TP-DCS field were set to indicate 8-bit data or Unicode, the length would be the number of octets (9).
             indexNextRead = indexNextRead + 1;
             // read message PDU
-            string message = pdu.Substring(indexNextRead*2);
-            return new Message(number.ToString().Substring(0, numberLenght), Ucs2ToCp1251(message)) { Date = messageDate };
+            string message = pdu.Substring(indexNextRead * 2);
+            return new Message(number.ToString().Substring(0, numberLenght), Ucs2ToCp1251(message, codingFormat, userDataLenght)) { Date = messageDate };
             }
 
         private string Cp1251ToUcs2(string str)
             {
-            string results;
             StringBuilder ucs2 = new StringBuilder();
             for ( int i = 0; i < str.Length; i++ )
                 {
-                byte asciiCode = ord(str[i]);
-                if ( asciiCode < 127 )
-                    {
-                    results = asciiCode.ToString("X4");
-                    }
-                else if ( asciiCode == 184 )
-                    { //ё
-                    results = "0451";
-                    }
-                else if ( asciiCode == 168 )
-                    { //Ё
-                    results = "0401";
-                    }
-                else
-                    {
-                    results = ( asciiCode - 192 + 1040 ).ToString("X4");
-                    }
-                ucs2.Append(results);
+                ucs2.Append(Convert.ToInt32(str[i]).ToString("X4"));
                 }
             return ucs2.ToString();
             }
 
-        private string Ucs2ToCp1251(string str)
+        private string Ucs2ToCp1251(string str, int codingFormat, int lenght)
             {
             StringBuilder result = new StringBuilder();
-            for ( int i = 0; i < str.Length; i += 4 )
+            if ( codingFormat == 0 )
                 {
-                string symbolCode = str.Substring(i, 4);
-                int code = Convert.ToInt32(symbolCode, 16);
-                //if ( code > 126 )
-                //    {
-                //    if ( code == 1105 )
-                //        {
-                //        code = 184; //ё
-                //        }
-                //    else if ( code == 1025 )
-                //        {
-                //        code = 168; //Ё
-                //        }
-                //    else if ( code >= 848 )
-                //        {
-                //        code -= 848;
-                //        }
-                //    }
-                //else if ( code == 0 )
-                //    {
-                //    code = 32;
-                //    }
-                result.Append(Convert.ToChar(code));
+                StringBuilder tempString = new StringBuilder();
+                #region 7 bit coding
+                for ( int i = 0; i < str.Length; i += 2 )
+                    {
+                    string code = Convert.ToInt32(Convert.ToString(Convert.ToByte(str.Substring(i, 2), 16), 2)).ToString("00000000");
+                    tempString.Append(code.Invert());
+                    }
+                string codeStr = tempString.ToString();
+                for ( int i = 0; i < lenght; i++ )
+                    {
+                    result.Append(Convert.ToChar(Convert.ToInt16(codeStr.Substring(i*7, 7).Invert(), 2)));
+                    }
+                #endregion
+                }
+            else if ( codingFormat == 8 )
+                {
+                #region 16 bit coding
+                for ( int i = 0; i < str.Length; i += 4 )
+                    {
+                    string symbolCode = str.Substring(i, 4);
+                    int code = Convert.ToInt32(symbolCode, 16);
+                    result.Append(Convert.ToChar(code));
+                    }
+                #endregion
                 }
             return result.ToString();
             }
@@ -342,7 +339,7 @@ namespace SmartServerClient.Connection
                 query.Append("\r");
                 ComPort.Write(query.ToString());
 
-                while ( result == "" || ( result.IndexOf("OK") == -1 && result.IndexOf("ERROR") == -1 && result.IndexOf(">") == -1) )
+                while ( result == "" || ( result.IndexOf("OK") == -1 && result.IndexOf("ERROR") == -1 && result.IndexOf(">") == -1 ) )
                     {
                     Thread.Sleep(1000);
                     //char[] buff = new char[ ComPort.BytesToRead ];

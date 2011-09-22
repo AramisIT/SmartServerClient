@@ -22,14 +22,16 @@ namespace Aramis.Enums
 namespace SmartServerClient.Connection
     {
     public delegate void OnTestStartedDelegate();
-    public delegate void OnRemouteSMSServiceOfflineDelegate();
+    public delegate void OnRemouteSMSServiceStatusChangedDelegate(bool isOnline);
     public delegate void OnTestEndedDelegate(TestResults result);
+    public delegate void OnErrorDelegate(string error);
 
     public class SmartClient
         {
         public event OnTestStartedDelegate OnTestStarted;
         public event OnTestEndedDelegate OnTestEnded;
-        public event OnRemouteSMSServiceOfflineDelegate OnRemouteSMSServiceOffline;
+        public event OnRemouteSMSServiceStatusChangedDelegate OnRemouteSMSServiceStatusChanged;
+        public event OnErrorDelegate OnError;
 
         public const int SLEEP_BEFORE_CHECKING_AGAIN = 3000;
         public SetConnectionStatusDelegate OnSmartServerConnectionStatusChanged;
@@ -147,7 +149,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             }
 
@@ -169,22 +171,27 @@ namespace SmartServerClient.Connection
                         if ( !result && remouteServiceIsOnline)
                             {
                             remouteServiceIsOnline = false;
-                            SendMessageToAdministrator(String.Format("Удаленный сервис {0} Offline", Settings.Default.BaseHelperClassName));
-                            if ( OnRemouteSMSServiceOffline != null )
+                            SendMessageToAdministrator(String.Format("Удаленный сервис {0} Offline",
+                                Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "SmartPhoneSMSHelper" : "GSMTerminalSMSHelper"));
+                            if ( OnRemouteSMSServiceStatusChanged != null )
                                 {
-                                OnRemouteSMSServiceOffline();
+                                OnRemouteSMSServiceStatusChanged(false);
                                 }
                             }
-                        else if ( result )
+                        else if ( result && !remouteServiceIsOnline )
                             {
                             remouteServiceIsOnline = true;
+                            if ( OnRemouteSMSServiceStatusChanged != null )
+                                {
+                                OnRemouteSMSServiceStatusChanged(true);
+                                }
                             }
                         }
                     }
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             return result;
             }
@@ -220,7 +227,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             }
 
@@ -237,7 +244,7 @@ namespace SmartServerClient.Connection
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@PhoneNumber", Settings.Default.RemoutePhoneNumber);
                         cmd.Parameters.AddWithValue("@NativePhoneNumber", Settings.Default.NativePhoneNumber);
-                        object result = cmd.ExecuteNonQuery();
+                        object result = cmd.ExecuteScalar();
                         testId = Convert.ToInt64( result);
                         testStarted = true;
                         lastChecked = DateTime.Now.Ticks;
@@ -250,7 +257,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                exp.ToString();
+                NotifyOnError(exp);
                 }
             }
 
@@ -281,7 +288,7 @@ namespace SmartServerClient.Connection
                     }
                 catch ( Exception exp )
                     {
-
+                    NotifyOnError(exp);
                     }
                 }
 
@@ -303,8 +310,9 @@ namespace SmartServerClient.Connection
                         }
                     }
                 }
-            catch
+            catch (Exception exp)
                 {
+                NotifyOnError(exp);
                 }
             }
 
@@ -337,8 +345,9 @@ namespace SmartServerClient.Connection
                         }
                     }
                 }
-            catch
+            catch (Exception exp)
                 {
+                NotifyOnError(exp);
                 }
             return null;
             }
@@ -371,13 +380,27 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                return false;
+                NotifyOnError(exp);                
                 }
+            return false;
             }
 
         public void Stop()
             {
             NeedAbortThread = true;
+            }
+
+        public void NotifyOnError(Exception exp)
+            {
+            NotifyOnError(exp.ToString());
+            }
+
+        public void NotifyOnError(string exceptionMessage)
+            {
+            if ( OnError != null )
+                {
+                OnError(exceptionMessage.ToString());
+                }
             }
         }
     }
