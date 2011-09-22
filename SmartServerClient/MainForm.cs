@@ -86,7 +86,7 @@ namespace SmartServerClient
             else
                 {
                 Log.SelectionColor = Color.Red;
-                Log.AppendText(String.Format("Ошибка: {0}", error));
+                Log.AppendText(String.Format("Ошибка: {0}\r\n", error));
                 }
             }
 

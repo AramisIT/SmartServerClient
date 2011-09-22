@@ -311,7 +311,7 @@ namespace SmartServerClient.Connection
                         }
                     }
                 }
-            catch ( Exception exp )
+            catch (Exception exp)
                 {
                 NotifyOnError(exp);
                 }
@@ -346,7 +346,7 @@ namespace SmartServerClient.Connection
                         }
                     }
                 }
-            catch ( Exception exp )
+            catch (Exception exp)
                 {
                 NotifyOnError(exp);
                 }
@@ -381,7 +381,7 @@ namespace SmartServerClient.Connection
                 }
             catch ( Exception exp )
                 {
-                NotifyOnError(exp);
+                NotifyOnError(exp);                
                 }
             return false;
             }
