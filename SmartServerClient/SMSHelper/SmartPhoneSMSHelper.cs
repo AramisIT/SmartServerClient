@@ -6,7 +6,7 @@ namespace Aramis.SMSHelperNamespace
 {
     public class SmartPhoneSMSHelper : SMSHelper
         {
-        private SmartServerClient.Connection.SmartServerClient Client = new SmartServerClient.Connection.SmartServerClient() { RefreshConnectionStatus = OnRefreshConnectionStatus };
+        private SmartServerClient.Connection.SmartServerClient Client = new SmartServerClient.Connection.SmartServerClient();
 
         public override Message GetSMS()
             {

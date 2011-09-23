@@ -79,10 +79,8 @@ namespace SmartServerClient.Connection
         public void Start()
             {
             Console.WriteLine("Запуск агента");
-            ShowingInformation();
             while ( !NeedAbortThread )
                 {
-                SetConnectionStatus(false);
                 while ( !Connect() ) ;
                 ReadPackages();
                 }

@@ -10,6 +10,7 @@ using SmartServerClient;
 using SmartServerClient.Properties;
 using WMS_client;
 using Aramis.SMSHelperNamespace;
+using System.Net.Sockets;
 
 namespace SmartServerClient.Connection
     {
@@ -36,14 +37,9 @@ namespace SmartServerClient.Connection
         {
 
         #region Public fields
-        public static int SERVER_PORT = 8609;
-
-        public bool OnLine
-            {
-            get { return ConnectionAgent.OnLine; }
-            }
-
-        public ServerAgent ConnectionAgent;
+        public static int SERVER_PORT = 8609; 
+        private static int TIME_OUT = 30;
+        public event OnErrorDelegate OnError;
         public bool NeedAbortThread
             {
             get;
@@ -52,135 +48,119 @@ namespace SmartServerClient.Connection
         #endregion
 
         #region Private fields
-
-        private Thread AgentThread;
-
+        private TcpClient client;
         private string serverIP;
-        public SetConnectionStatusDelegate RefreshConnectionStatus
-            {
-            get;
-            set;
-            }
+        
         #endregion // Private fields
 
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        #region Public Methods
-
-        #region Service methods
-
         public SmartServerClient()
             {
-            #region Чтение IP-адреса сервера
-            Settings settings = new Settings();
-            serverIP = settings.ServerIPAddress;
-            #endregion
-
-            StartConnectionAgent();
+            
             }
 
-        private void StartConnectionAgent()
+        internal object[] PerformQuery(string query, params object[] parameters)
             {
+            PackageViaWireless package = new PackageViaWireless();
             try
                 {
-                ConnectionAgent = new ServerAgent(serverIP, SERVER_PORT, this);
-                ConnectionAgent.OnRefreshConnectionStatus += new SetConnectionStatusDelegate(ConnectionAgent_OnRefreshConnectionStatus);
-                }
-            catch ( Exception exp )
-                {
-                Console.WriteLine(string.Format("Ошибка создания агента сервера. Server IP = {0}\r\nОписание ошибки:\r\n{1}\r\nПриложение будет закрыто!", serverIP, exp.Message));
-                Application.Exit();
-                }
+                client = new TcpClient(Settings.Default.ServerIPAddress, SERVER_PORT);
+                NetworkStream stream = client.GetStream();
 
-            AgentThread = new Thread(new ThreadStart(ConnectionAgent.Start));
-            AgentThread.Name = "Server Agent";
-            AgentThread.IsBackground = false;
-            AgentThread.Start();
-            }
-
-        void ConnectionAgent_OnRefreshConnectionStatus(bool IsOnline)
-            {
-            if ( RefreshConnectionStatus != null && !NeedAbortThread)
-                {
-                RefreshConnectionStatus(IsOnline);
-                }
-            }
-
-        private void RestartConnectionAgent()
-            {
-            AgentThread.Abort();
-            ConnectionAgent.Stop();
-            StartConnectionAgent();
-            }
-
-        public object[] PerformQuery(string QueryName, params object[] Parameters)
-            {
-
-            PackageViaWireless Package = new PackageViaWireless(0, true);
-            Package.DefineQueryAndParams(QueryName, PackageConvertation.GetStrPatametersFromArray(Parameters));
-            ConnectionAgent.WaitingPackageID = Package.PackageID;
-            ConnectionAgent.Executed = false;
-
-            if ( ConnectionAgent.OnLine && ConnectionAgent.SendPackage(Package.GetPackage()) )
-                {
-                var startTime = DateTime.Now;
-                while ( !ConnectionAgent.RequestReady && ConnectionAgent.OnLine )
-                    {
-                    Thread.Sleep(300);
-                    DateTime currentTime = DateTime.Now;
-                    double totalSec = ( ( TimeSpan ) ( currentTime.Subtract(startTime) ) ).TotalSeconds;
-
-                    if ( totalSec > 60 )
-                        {
-                        RestartConnectionAgent();
-                        return null;
-                        }
-
-                    }
-
-                if ( ConnectionAgent.Package == null || !ConnectionAgent.Executed )
-                    {
-
-                    Console.WriteLine("Пропала связь с сервером!");
-                    return null;
-                    }
-                if ( ConnectionAgent.Package.Parameters == "#ERROR:1C_AGENT_DISABLE#" )
-                    {
-                    ConnectionAgent.Package.Parameters = "";
-                    ConnectionAgent.RequestReady = false;
-                    return null;
-                    }
-                object[] result = PackageConvertation.GetPatametersFromStr(ConnectionAgent.Package.Parameters);
-
-                ConnectionAgent.RequestReady = false;
-
-                if ( result.Length == 0 )
+                if ( !Connected(stream))
                     {
                     return null;
                     }
-                else
+
+                package.DefineQueryAndParams(query, PackageConvertation.GetStrPatametersFromArray(parameters));
+                byte[] buffer = package.GetPackage();
+                stream.Write(buffer, 0, buffer.Length);
+                package = ReadData(stream);
+
+                if ( package.QueryName == "GetSMS" )
                     {
-                    return result;
+                    PackageViaWireless okPackage = new PackageViaWireless();
+                    okPackage.DefineQueryAndParams("OK", PackageConvertation.GetStrPatametersFromArray(new object[0]));
+                    buffer = okPackage.GetPackage();
+                    stream.Write(buffer, 0, buffer.Length);
                     }
                 }
-            return null;
-
+            catch (Exception exp)
+                {
+                if ( OnError != null )
+                    {
+                    OnError(exp.ToString());
+                    }
+                }
+            finally
+                {
+                if ( client != null )
+                    {
+                    client.Close();
+                    }
+                }
+            return package == null || package.Parameters == null ? null :PackageConvertation.GetPatametersFromStr(package.Parameters);
             }
 
-        public void SendToServer(string QueryName, params object[] Parameters)
+        private bool Connected(NetworkStream stream)
             {
-            PackageViaWireless Package = new PackageViaWireless(0, true);
-            Package.DefineQueryAndParams(QueryName, PackageConvertation.GetStrPatametersFromArray(Parameters));
-            ConnectionAgent.WaitingPackageID = Package.PackageID;
-            ConnectionAgent.SendPackage(Package.GetPackage());
+            byte[] buffer = new byte[10];
+            stream.Read(buffer, 0, 10);
+            string result = Encoding.GetEncoding(1251).GetString(buffer, 0, 10);
+            if ( result == "$M$_$ERVER" )
+                {
+                return true;
+                }
+            return false;
             }
 
-        #endregion
-        #endregion
+        private PackageViaWireless ReadData(NetworkStream stream)
+            {
+            StringBuilder data;
+            byte[] buffer;
+            string head;
+            PackageViaWireless package = new PackageViaWireless();
+            data = new StringBuilder();
+            buffer = new byte[256];
+            do
+                {
+                int streamLength = stream.Read(buffer, 0, buffer.Length);
+                data.Append(Encoding.GetEncoding(1251).GetString(buffer, 0, streamLength));
+                } while ( stream.DataAvailable );
+
+            if ( !package.SetPackage(data.ToString(), out head) )
+                {
+                client.Close();
+                package = null;
+                }
+            return package;
+            }
+
+        private bool DataAvaileble(NetworkStream stream)
+            {
+            long curreentTicks = DateTime.Now.Ticks;
+            bool timeOut = false;
+            while ( !stream.DataAvailable && !timeOut )
+                {
+                timeOut = TimeOut(curreentTicks);
+                Thread.Sleep(100);
+                }
+            if ( timeOut )
+                {
+                client.Close();
+                }
+            return !timeOut;
+            }
+
+        private bool TimeOut(long curreentTicks)
+            {
+            return new TimeSpan(( DateTime.Now.Ticks - curreentTicks )).TotalSeconds > TIME_OUT;
+            }
 
         internal void Stop()
             {
-            ConnectionAgent.Stop();
+            client.Close();
             }
         }
     }

@@ -121,7 +121,8 @@ namespace SmartServerClient.Connection
                 if ( testStarted && new TimeSpan(DateTime.Now.Ticks - lastChecked).TotalSeconds > Settings.Default.DelayBeforeTestErrorCalled )
                     {
                     PerformTest(TestResults.Error);
-                    SendMessageToAdministrator(String.Format("Ошибка теста. Cервис {0} не прислал СМС", Settings.Default.BaseHelperClassName));
+                    SendMessageToAdministrator(String.Format("Ошибка теста. Cервис {0} не прислал СМС",
+                        Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "Смартфон" : "GSM терминал"));
                     }
 
                 CheckRemouteSMSServiceStatus();
@@ -173,7 +174,7 @@ namespace SmartServerClient.Connection
                             {
                             remouteServiceIsOnline = false;
                             SendMessageToAdministrator(String.Format("Удаленный сервис {0} Offline",
-                                Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "SmartPhoneSMSHelper" : "GSMTerminalSMSHelper"));
+                                Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "Смартфон" : "GSM терминал"));
                             if ( OnRemouteSMSServiceStatusChanged != null )
                                 {
                                 OnRemouteSMSServiceStatusChanged(false);
