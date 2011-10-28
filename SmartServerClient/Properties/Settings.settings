@@ -40,5 +40,8 @@
     <Setting Name="AdminPhoneNumber" Type="System.String" Scope="Application">
       <Value Profile="(Default)">380508090208</Value>
     </Setting>
+    <Setting Name="DelayBetweenChecking" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">10000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -125,5 +125,14 @@ namespace SmartServerClient.Properties {
                 return ((string)(this["AdminPhoneNumber"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10000")]
+        public int DelayBetweenChecking {
+            get {
+                return ((int)(this["DelayBetweenChecking"]));
+            }
+        }
     }
 }

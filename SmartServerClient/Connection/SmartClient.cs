@@ -33,7 +33,7 @@ namespace SmartServerClient.Connection
         public event OnRemouteSMSServiceStatusChangedDelegate OnRemouteSMSServiceStatusChanged;
         public event OnErrorDelegate OnError;
 
-        public const int SLEEP_BEFORE_CHECKING_AGAIN = 3000;
+        public const int SLEEP_BEFORE_CHECKING_AGAIN = 10000;
         public SetConnectionStatusDelegate OnSmartServerConnectionStatusChanged;
         public SetConnectionStatusDelegate OnGSMTerminalConnectionStatusChanged;
         private long lastChecked = 0;
@@ -127,7 +127,7 @@ namespace SmartServerClient.Connection
 
                 CheckRemouteSMSServiceStatus();
 
-                Thread.Sleep(SLEEP_BEFORE_CHECKING_AGAIN);
+                Thread.Sleep(Settings.Default.DelayBetweenChecking);
                 }
             MessageList.Serialize();
             SMSHelper.SmsHelper.Close();

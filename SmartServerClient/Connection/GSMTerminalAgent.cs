@@ -53,7 +53,7 @@ namespace SmartServerClient.Connection
                 {
                 return false;
                 }
-            if ( answer.ToLower().IndexOf("ready") == -1 )
+            if ( answer.ToLower().IndexOf("ready") == -1 && answer.ToLower().IndexOf("ok") == -1 )
                 {
                 answer = SendCommandAndReceiveAnswer("+CPIN", Settings.Default.PinCode);
                 if ( IsError(answer) )
