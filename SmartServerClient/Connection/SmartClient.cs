@@ -69,7 +69,8 @@ namespace SmartServerClient.Connection
                 int i = 0;
                 while ( i < MessageList.MessageList.Count )
                     {
-                    if ( CreatePretaskBySMS(MessageList.MessageList[i]) )
+                    long number;
+                    if (!long.TryParse(MessageList.MessageList[i].Number, out number) || CreatePretaskBySMS(MessageList.MessageList[i]))
                         {
                         MessageList.MessageList.RemoveAt(i);
                         }
@@ -82,7 +83,8 @@ namespace SmartServerClient.Connection
                 do
                     {
                     message = SMSHelper.SmsHelper.GetSMS();
-                    if ( message != null )
+                    long number = 0;
+                    if ( message != null && long.TryParse(message.Number, out number))
                         {
                         if ( message.Number != Settings.Default.RemoutePhoneNumber )
                             {
@@ -113,7 +115,7 @@ namespace SmartServerClient.Connection
                         }
                     } while ( message != null && !ErrorWhileSending );
 
-                if ( new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus() )
+                if (Settings.Default.HoursBetweenDeliveryServiceTest != 0 && new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus() )
                     {
                     StartTest();
                     }
@@ -129,8 +131,8 @@ namespace SmartServerClient.Connection
 
                 Thread.Sleep(Settings.Default.DelayBetweenChecking);
                 }
-            MessageList.Serialize();
             SMSHelper.SmsHelper.Close();
+            MessageList.Serialize();            
             }
 
         private void UpdateServiceStatus()

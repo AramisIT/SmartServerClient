@@ -55,6 +55,7 @@ namespace Aramis.SMSHelperNamespace
                         Stream fStream = new FileStream(LOCAL_PATH + "\\" + MESSAGES_PATH, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None);
                         binFormat.Serialize(fStream, this);
                         fStream.Close();
+                        serialized = true;
                         }
                     catch
                         {
