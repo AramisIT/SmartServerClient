@@ -109,7 +109,7 @@
                     <td colspan="7">
                         <table width="97%" border="1" bordercolor="#dcdcdc" rules="cols" class="issuetable">
                             <tr>
-                                <td colspan="7" class="issuetitle" _locID="ConversionIssues">Ошибки преобразования - <xsl:value-of select="@name"/>:</td>
+                                <td colspan="7" class="issuetitle" _locID="ConversionIssues">Отчет о преобразовании - <xsl:value-of select="@name"/>:</td>
                             </tr>
 
                             <xsl:for-each select="event[@error-level!='3']">
