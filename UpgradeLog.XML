@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="SmartServerClient">
+</Property><Property Name="Файл решения" Value="D:\AramisIT\SmartServerClient\SmartServerClient.sln">
+</Property><Property Name="Date" Value="3 июля 2012 г.">
+</Property><Property Name="Time" Value="9:40">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="SmartServerClient.sln" Description="Преобразование решения успешно завершено">
+</Event><Event ErrorLevel="3" Project="" Source="SmartServerClient.sln" Description="Converted">
+</Event></UpgradeLog>

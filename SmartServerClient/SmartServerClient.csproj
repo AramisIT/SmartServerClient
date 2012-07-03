@@ -39,10 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PackageConvertation">
-      <HintPath>..\..\Aramis WMS (base) SMS\Storekeeper Management Server\bin\Release\PackageConvertation.dll</HintPath>
-    </Reference>
-    <Reference Include="PackageViaWireless">
-      <HintPath>..\..\SmartServer\SmartServer\bin\Release\PackageViaWireless.dll</HintPath>
+      <HintPath>..\PackageConvertation.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
