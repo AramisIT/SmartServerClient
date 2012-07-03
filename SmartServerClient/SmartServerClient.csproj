@@ -39,10 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PackageConvertation">
-      <HintPath>..\..\..\..\..\Program Files\SmartClient GSMTerminal\PackageConvertation.dll</HintPath>
-    </Reference>
-    <Reference Include="PackageViaWireless">
-      <HintPath>..\..\..\..\..\Program Files\SmartClient GSMTerminal\PackageViaWireless.dll</HintPath>
+      <HintPath>..\PackageConvertation.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
