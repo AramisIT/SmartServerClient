@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="SmartServerClient">
+</Property><Property Name="Solution File" Value="W:\Projects\UTK\SOFTWARE\SmartServerClient\SmartServerClient.sln">
+</Property><Property Name="User Options File" Value="W:\Projects\UTK\SOFTWARE\SmartServerClient\SmartServerClient.v11.suo">
+</Property><Property Name="Date" Value="3 июля 2012 г.">
+</Property><Property Name="Time" Value="9:59">
+</Property><Property Name="Log Number" Value="2">
+</Property></Properties><Event ErrorLevel="3" Project="" Source="SmartServerClient.sln" Description="SafeUpgrade">
+</Event><Event ErrorLevel="0" Project="" Source="SmartServerClient.sln" Description="File successfully backed up as W:\Projects\UTK\SOFTWARE\SmartServerClient\Backup\SmartServerClient.sln">
+</Event><Event ErrorLevel="0" Project="" Source="SmartServerClient.v11.suo" Description="File successfully backed up as W:\Projects\UTK\SOFTWARE\SmartServerClient\Backup\SmartServerClient.v11.suo">
+</Event><Event ErrorLevel="0" Project="" Source="SmartServerClient.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="SmartServerClient.sln" Description="Converted">
+</Event></UpgradeLog>
