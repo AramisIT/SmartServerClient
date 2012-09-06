@@ -81,7 +81,6 @@ namespace SmartServerClient.Connection
                             i++;
                             }
                         }
-
                     do
                         {
                         message = SMSHelper.SmsHelper.GetSMS();
