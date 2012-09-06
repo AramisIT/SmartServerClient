@@ -89,7 +89,7 @@ namespace SmartServerClient.Connection
                         if ( !IsError(answer) )
                             {
                             result = WriteMessage(mess);
-                            return true;
+                            return result;
                             }
                         }
 
@@ -341,7 +341,7 @@ namespace SmartServerClient.Connection
 
                 while ( result == "" || ( result.IndexOf("OK") == -1 && result.IndexOf("ERROR") == -1 && result.IndexOf(">") == -1 ) )
                     {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(100);
                     //char[] buff = new char[ ComPort.BytesToRead ];
                     //ComPort.Read(buff, 0, buff.Length);
                     //result += buff.ArrayToString();
@@ -370,10 +370,10 @@ namespace SmartServerClient.Connection
                     ComPort.Open();
                     }
                 ComPort.Write(String.Format("{0}{1}\r", message, ( char ) 26));
-                while ( result == null || result == "" )
+                while (result == null || result == "" || (result.IndexOf("OK") == -1 && result.IndexOf("ERROR") == -1))
                     {
                     Thread.Sleep(100);
-                    result = ComPort.ReadExisting();
+                    result += ComPort.ReadExisting();
                     }
                 if ( !isPortOpened )
                     {

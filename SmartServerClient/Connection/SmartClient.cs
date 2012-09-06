@@ -119,7 +119,7 @@ namespace SmartServerClient.Connection
                     if (Settings.Default.HoursBetweenDeliveryServiceTest != 0 
                         && DateTime.Now.TimeOfDay > Settings.Default.TestStartFromTime
                         && DateTime.Now.TimeOfDay < Settings.Default.TestStartToTime
-                        && new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus())
+                        && new TimeSpan(DateTime.Now.Ticks - lastChecked).TotalHours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus())
                         {
                         StartTest();
                         }

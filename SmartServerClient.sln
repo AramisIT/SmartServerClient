@@ -1,5 +1,5 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 11
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartServerClient", "SmartServerClient\SmartServerClient.csproj", "{8055F083-CBFC-4EA4-B8B2-81E5EF538A4C}"
 EndProject
