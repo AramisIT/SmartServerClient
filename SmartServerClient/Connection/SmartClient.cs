@@ -63,72 +63,81 @@ namespace SmartServerClient.Connection
             {
             while ( !NeedAbortThread )
                 {
-                UpdateServiceStatus();
-
-                Message message;
-                int i = 0;
-                while ( i < MessageList.MessageList.Count )
+                try
                     {
-                    long number;
-                    if (!long.TryParse(MessageList.MessageList[i].Number, out number) || CreatePretaskBySMS(MessageList.MessageList[i]))
-                        {
-                        MessageList.MessageList.RemoveAt(i);
-                        }
-                    else
-                        {
-                        i++;
-                        }
-                    }
+                    UpdateServiceStatus();
 
-                do
-                    {
-                    message = SMSHelper.SmsHelper.GetSMS();
-                    long number = 0;
-                    if ( message != null && long.TryParse(message.Number, out number))
+                    Message message;
+                    int i = 0;
+                    while (i < MessageList.MessageList.Count)
                         {
-                        if ( message.Number != Settings.Default.RemoutePhoneNumber )
+                        long number;
+                        if (!long.TryParse(MessageList.MessageList[i].Number, out number) || CreatePretaskBySMS(MessageList.MessageList[i]))
                             {
-                            if ( !CreatePretaskBySMS(message) )
-                                {
-                                MessageList.MessageList.Add(message);
-                                }
+                            MessageList.MessageList.RemoveAt(i);
                             }
                         else
                             {
-                            PerformTest();
+                            i++;
                             }
                         }
-                    }
-                while ( message != null );
 
-                bool ErrorWhileSending = false;
-                do
-                    {
-                    message = GetMessageForSending();
-                    if ( message != null )
+                    do
                         {
-                        ErrorWhileSending = !SMSHelper.SmsHelper.SendMessage(message);
-                        if ( !ErrorWhileSending )
+                        message = SMSHelper.SmsHelper.GetSMS();
+                        long number = 0;
+                        if (message != null && long.TryParse(message.Number, out number))
                             {
-                            MarkTaskAsSended(message.TaskId);
+                            if (message.Number != Settings.Default.RemoutePhoneNumber)
+                                {
+                                if (!CreatePretaskBySMS(message))
+                                    {
+                                    MessageList.MessageList.Add(message);
+                                    }
+                                }
+                            else
+                                {
+                                PerformTest();
+                                }
                             }
                         }
-                    } while ( message != null && !ErrorWhileSending );
+                    while (message != null);
 
-                if (Settings.Default.HoursBetweenDeliveryServiceTest != 0 && new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus() )
-                    {
-                    StartTest();
+                    bool ErrorWhileSending = false;
+                    do
+                        {
+                        message = GetMessageForSending();
+                        if (message != null)
+                            {
+                            ErrorWhileSending = !SMSHelper.SmsHelper.SendMessage(message);
+                            if (!ErrorWhileSending)
+                                {
+                                MarkTaskAsSended(message.TaskId);
+                                }
+                            }
+                        } while (message != null && !ErrorWhileSending);
+
+                    if (Settings.Default.HoursBetweenDeliveryServiceTest != 0 
+                        && DateTime.Now.TimeOfDay > Settings.Default.TestStartFromTime
+                        && DateTime.Now.TimeOfDay < Settings.Default.TestStartToTime
+                        && new TimeSpan(DateTime.Now.Ticks - lastChecked).Hours >= Settings.Default.HoursBetweenDeliveryServiceTest && !testStarted && CheckRemouteSMSServiceStatus())
+                        {
+                        StartTest();
+                        }
+
+                    if (testStarted && new TimeSpan(DateTime.Now.Ticks - lastChecked).TotalSeconds > Settings.Default.DelayBeforeTestErrorCalled)
+                        {
+                        PerformTest(TestResults.Error);
+                        SendMessageToAdministrator(String.Format("Ошибка теста. Cервис {0} не прислал СМС",
+                            Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "Смартфон" : "GSM терминал"));
+                        }
+
+                    CheckRemouteSMSServiceStatus();
                     }
-
-                if ( testStarted && new TimeSpan(DateTime.Now.Ticks - lastChecked).TotalSeconds > Settings.Default.DelayBeforeTestErrorCalled )
+                catch (Exception exp)
                     {
-                    PerformTest(TestResults.Error);
-                    SendMessageToAdministrator(String.Format("Ошибка теста. Cервис {0} не прислал СМС",
-                        Settings.Default.BaseHelperClassName == "GSMTerminalSMSHelper" ? "Смартфон" : "GSM терминал"));
+                    NotifyOnError(exp);
                     }
-
-                CheckRemouteSMSServiceStatus();
-
                 Thread.Sleep(Settings.Default.DelayBetweenChecking);
                 }
             SMSHelper.SmsHelper.Close();
@@ -181,6 +190,8 @@ namespace SmartServerClient.Connection
                                 {
                                 OnRemouteSMSServiceStatusChanged(false);
                                 }
+                            // Меняем номер телефона в константе номера отправки на текущий и изменяем все задачи на отправку СМС чтобы они были отправлены текущим модулем
+                            SetNewPhoneNumberAsMain();
                             }
                         else if ( result && !remouteServiceIsOnline )
                             {
@@ -198,6 +209,28 @@ namespace SmartServerClient.Connection
                 NotifyOnError(exp);
                 }
             return result;
+            }
+
+        private void SetNewPhoneNumberAsMain()
+            {
+            try
+                {
+                using (SqlConnection conn = new SqlConnection(Settings.Default.ConnectionString))
+                    {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                        {
+                        cmd.CommandText = "SetNewPhoneNumberAsMain";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@DevicePhoneNumber", Settings.Default.NativePhoneNumber);
+                        object result = cmd.ExecuteScalar();                        
+                        }
+                    }
+                }
+            catch (Exception exp)
+                {
+                NotifyOnError(exp);
+                }
             }
 
         private void SendMessageToAdministrator(string messageText)
@@ -306,10 +339,11 @@ namespace SmartServerClient.Connection
                     {
                     conn.Open();
 
-                    using ( SqlCommand cmd = new SqlCommand("update top(1) [SMSJournal] set [Sended] = @sended where [Id] = @taskId", conn) )
+                    using (SqlCommand cmd = new SqlCommand(@"SetSMSSendedState", conn))
                         {
-                        cmd.Parameters.AddWithValue("@taskId", taskId);
-                        cmd.Parameters.AddWithValue("@sended", true);
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@TaskId", taskId);
+                        cmd.Parameters.AddWithValue("@Sended", true);
                         int changedRows = cmd.ExecuteNonQuery();
                         }
                     }
