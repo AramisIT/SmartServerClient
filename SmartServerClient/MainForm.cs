@@ -49,7 +49,7 @@ namespace SmartServerClient
             Client.OnTestStarted += new OnTestStartedDelegate(Client_OnTestStarted);
             Client.OnTestEnded += new OnTestEndedDelegate(Client_OnTestEnded);
             Client.OnError += new OnErrorDelegate(Client_OnError);
-            Text = String.Format("Сервис доставки СМС: {0}", Settings.Default.BaseHelperClassName);
+            Text = String.Format("Сервис доставки СМС: {0}", Settings.Default.NativePhoneNumber);
             }
 
         void Client_OnRemouteSMSServiceStatusChanged(bool isOnline)
